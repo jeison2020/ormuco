@@ -1,0 +1,26 @@
+<article class="main-container">
+    <section>
+      <form [formGroup]="dataForm" class="form" (ngSubmit)="compareVersions()">
+        <mat-form-field>
+          <mat-label>Enter the first version</mat-label>
+          <input matInput type="text" formControlName="version1" (keydown)="onKeyDown($event)"/>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label>Enter the second version</mat-label>
+          <input matInput type="text" formControlName="version2" (keydown)="onKeyDown($event)"/>
+        </mat-form-field>
+        <section  class= "button">
+          <button mat-fab extended color="accent" [disabled]="!dataForm.valid" >
+            <mat-icon>compare_arrows</mat-icon>
+            Compare version
+          </button>
+        </section>
+      </form>
+    </section>
+    <section>
+      @if(comparisonResult){
+        <p>El resultado de la comparación es: {{ comparisonResult }}</p>
+      }
+    </section>
+  </article>
+  

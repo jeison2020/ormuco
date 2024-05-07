@@ -1,0 +1,39 @@
+ul,
+li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  .link {
+    color: rgb(52, 52, 52);
+    font-weight: 500;
+    font-size: 18px;
+  }
+  .link:hover {
+    color: #000000f7;
+  }
+}
+
+a {
+  text-decoration: none;
+}
+
+.nav-container {
+  display: block;
+  display: flex;
+  align-items: center;
+  gap: 100px;
+  margin-bottom: 50px;
+  background-color: rgb(151, 149, 149);
+  padding-left: 100px;
+  height: 50px;
+  .name{
+    font-size: 17px;
+    font-weight: bold;
+    color: rgb(255, 255, 255);
+  }
+  nav ul {
+    display: flex;
+    gap: 20px;
+  }
+}

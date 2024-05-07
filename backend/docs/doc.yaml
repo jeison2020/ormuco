@@ -1,0 +1,98 @@
+openapi: "3.0.0"
+info:
+  title: "LRU API"
+  version: "1.0.0"
+servers:
+  - url: "http://127.0.0.1:8080"
+paths:
+  /api/v1/LRU:
+    post:
+      summary: "Create a new LRU item"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                value:
+                  type: string
+      responses:
+        '200':
+          description: "LRU item created"
+        '400':
+          description: "Invalid request payload"
+        '500':
+          description: "Internal server error"
+    get:
+      summary: "List all LRU items"
+      responses:
+        '200':
+          description: "List of LRU items"
+        '400':
+          description: "Error key not found"
+  /api/v1/LRU/{key}:
+    get:
+      summary: "Get an LRU item by key"
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "LRU item found"
+        '404':
+          description: "LRU item not found"
+
+  /api/v1/compare/{v1}/{v2}:
+    get:
+      summary: "Get the greater between two numbers"
+      parameters:
+        - name: v1
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: v2
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "The comparison between the two version string "
+        '400':
+          description: "Invalid request payload"
+components:
+  schemas:
+    CreateLruRequest:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+
+    CreateLruResponse:
+      type: object
+      properties:
+        value:
+          type: string
+        expiration:
+          type: string
+          format: "date-time"
+
+    GetLruResponse:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+        expiration:
+          type: string
+          format: "date-time"

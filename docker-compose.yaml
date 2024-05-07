@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  angular-app:
+    container_name: angular-app
+    build:
+      context: ./frontend/
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - angular-app-build:/app/dist/ormuco/browser
+  golang-server:
+    container_name: golang-server
+    build:
+      context: ./backend/
+      dockerfile: ./Dockerfile
+
+    environment:
+      - CACHE_EXPIRATION=true
+      - CACHE_TIME_EXPIRATION=1
+      - SERVER_ADDRESS=0.0.0.0:8080
+      - CAPACITY=5
+      - REDIS_ADDRESS=localhost:6369
+      - REDIS_PASSWORD=
+      - REDIS_DB_NAME=0
+
+    ports:
+      - "8080:8080"
+    #command: ["make", "run"]
+    depends_on:
+      - db
+
+  db:
+    container_name: redis-db-ormuco
+    image: "redis:alpine"
+    ports:
+      - "6369:6369"
+
+  nginx:
+    container_name: nginx-2
+    build:
+      context: ./nginx
+      dockerfile: ./docker/Dockerfile
+    environment:
+      - REACT_APP_BACKEND_API=http://localhost:8000/api/v1
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      -  angular-app-build:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    command: ["nginx", "-g", "daemon off;"]
+    depends_on:
+      - golang-server
+
+volumes:
+  angular-app-build:
+
+networks:
+  my-network:
+    driver: bridge

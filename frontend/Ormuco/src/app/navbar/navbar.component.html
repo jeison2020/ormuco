@@ -1,0 +1,12 @@
+<section class="nav-container">
+  <section class="name">TECHNICAL TEST</section>
+  <nav>
+    <ul>
+      @for (item of navbar; track item.id){
+      <li>
+        <a class="link" routerLink="{{ item.routerLink }}"  routerLinkActive="active" > {{ item.name }}</a>
+      </li>
+      }
+    </ul>
+  </nav>
+</section>

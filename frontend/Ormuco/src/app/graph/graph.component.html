@@ -1,0 +1,40 @@
+<article class="main-container">
+  <section>
+    <form [formGroup]="dataForm" class="form" (ngSubmit)="updateChart()">
+      <mat-form-field>
+        <mat-label>x1</mat-label>
+        <input matInput type="number" placeholder="x1" formControlName="x1"  (keydown)="onKeyDown($event)"/>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>x2</mat-label>
+        <input matInput type="number" placeholder="x2" formControlName="x2"  (keydown)="onKeyDown($event)"/>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>x3</mat-label>
+        <input matInput type="number" placeholder="x3" formControlName="x3"  (keydown)="onKeyDown($event)"/>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>x4</mat-label>
+        <input matInput type="number" placeholder="x4" formControlName="x4"  (keydown)="onKeyDown($event)"/>
+      </mat-form-field>
+      <section  class= "button">
+        <button mat-fab extended color="accent" [disabled]="!dataForm.valid">
+          <mat-icon>stacked_line_chart</mat-icon>
+          Update Chart
+        </button>
+      </section>
+    </form>
+    @if(!dataForm.valid){
+      <section class="message">Complete de form to enable button</section>
+      }
+  </section>
+  <section class="container-canva">
+    <canvas #lineChart width="400" height="200"></canvas>
+  </section>
+  @if (showText) {
+  <section>
+    @if (overlap) {The lines overlap.} @if (!overlap) {The lines do not
+    overlap.}
+  </section>
+  }
+</article>

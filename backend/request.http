@@ -1,0 +1,14 @@
+### CREATE LRU
+POST http://localhost:8080/api/v1/LRU
+Content-Type: application/json
+
+{
+  "value": "barcelona",
+  "key": "21"
+}
+
+### GET ALL DATA IN CACHE
+GET http://localhost:8080/api/v1/LRU
+
+### get unit LRU
+GET http://localhost:8080/api/v1/LRU/21
