@@ -19,7 +19,7 @@ services:
       - CACHE_TIME_EXPIRATION=1
       - SERVER_ADDRESS=0.0.0.0:8080
       - CAPACITY=5
-      - REDIS_ADDRESS=localhost:6369
+      - REDIS_ADDRESS=db:6379
       - REDIS_PASSWORD=
       - REDIS_DB_NAME=0
 
@@ -33,15 +33,14 @@ services:
     container_name: redis-db-ormuco
     image: "redis:alpine"
     ports:
-      - "6369:6369"
+      - "6369:6379"
+      - "6369:6379"
 
   nginx:
     container_name: nginx-2
     build:
       context: ./nginx
       dockerfile: ./docker/Dockerfile
-    environment:
-      - REACT_APP_BACKEND_API=http://localhost:8000/api/v1
     restart: always
     ports:
       - "80:80"
