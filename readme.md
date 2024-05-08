@@ -104,15 +104,15 @@ This architecture ensures that clients stay synchronized with changes to LRU dat
 
 
 
-## screenshot exercise 1
+## Screenshot exercise 1
 ![image 1](images/1.png)
 
 
-## screenshot exercise 2
+## Screenshot exercise 2
 ![image 2](images/2.png)
 
 
-## screenshot exercise 3
+## Screenshot exercise 3
 ![image 3](images/3.png)
 
 
