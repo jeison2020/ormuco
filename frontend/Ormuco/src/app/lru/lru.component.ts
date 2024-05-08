@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -13,6 +13,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { LruService } from './lru.service';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
+import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
 
 @Component({
   selector: 'app-lru',
@@ -25,23 +26,38 @@ import { CommonModule } from '@angular/common';
     MatButtonModule,
     MatIconModule,
     MatTableModule,
-    CommonModule
+    CommonModule,
   ],
   templateUrl: './lru.component.html',
   styleUrl: './lru.component.scss',
 })
-export class LruComponent implements OnInit {
+export class LruComponent implements OnInit, OnDestroy {
   dataForm = new FormGroup({
     key: new FormControl('', Validators.required),
     value: new FormControl('', Validators.required),
   });
   data: DataItem[] = [];
   originalData: DataItem[] = [];
-  
-  constructor(private lruService: LruService) {}
+  expiredKeys: string[] = []
+  private socket$!: WebSocketSubject<any>;
+  constructor(private lruService: LruService,
+  ) {}
 
   ngOnInit(): void {
+    this.socket$ = webSocket('ws://localhost:8081/ws');
     this.getAlldata();
+    this.socket$.subscribe(
+      (message) => { 
+        this.getAlldata();
+        console.log('Received message:', message) 
+      },
+      (error) => console.error('WebSocket error:', error),
+      () => console.log('WebSocket connection closed.')
+    );
+  }
+
+  ngOnDestroy() {
+    //this.socket.close();
   }
 
   public getAlldata() {

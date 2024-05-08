@@ -1,40 +1,41 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/go-chi/chi"
+	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
-	"github.com/robfig/cron/v3"
 	_ "github.com/swaggo/files"
 	_ "github.com/swaggo/gin-swagger"
 	_ "github.com/swaggo/http-swagger/v2"
-	"log"
 	"ormuco.go/config"
 	_ "ormuco.go/docs"
 	"ormuco.go/internal/handler"
 )
 
 func main() {
-	scheduler := cron.New(cron.WithSeconds())
 	config, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("can not load config", err)
 	}
 	cache := handler.NewCache(config.Capacity)
-	_, err = scheduler.AddFunc("* * * * * *", func() {
-		cache.ClearCacheExpiration()
-	})
 	if err != nil {
 		fmt.Println("Error adding cron job:", err)
 		return
 	}
-	scheduler.Start()
-	redis.NewClient(&redis.Options{})
-	server, err := handler.NewHTTPServer(config, chi.NewRouter(), cache, redis.NewClient(&redis.Options{
-		Addr:     config.RedisAddress,  // Redis server address
-		Password: config.RedisPassword, // No password
+	redis := redis.NewClient(&redis.Options{
+		Addr:     config.RedisAddress,
+		Password: config.RedisPassword,
 		DB:       config.RedisDbName,
-	}))
+	})
+	go watchForExpiredKeys(redis)
+	go webSocketServer()
+	server, err := handler.NewHTTPServer(config, chi.NewRouter(), cache, redis)
+
 	if err != nil {
 		log.Fatal("cannot connect to the database", err)
 	}
@@ -43,4 +44,80 @@ func main() {
 	if err != nil {
 		log.Println("error runing server", err)
 	}
+}
+
+func watchForExpiredKeys(redisClient *redis.Client) {
+	pubsub := redisClient.Subscribe(context.Background(), "__keyevent@0__:expired")
+	defer pubsub.Close()
+
+	for {
+		msg, err := pubsub.ReceiveMessage(context.Background())
+		if err != nil {
+			log.Printf("Error receiving message from Redis: %v", err)
+			continue
+		}
+
+		expiredKey := msg.Payload
+		for client := range clients {
+			err := client.WriteMessage(websocket.TextMessage, []byte(expiredKey))
+			if err != nil {
+				log.Printf("Error sending WebSocket message: %v", err)
+				client.Close()
+				delete(clients, client)
+			}
+		}
+
+	}
+
+}
+
+func webSocketServer() {
+	http.HandleFunc("/ws", handleWebSocket)
+	log.Println("WebSocket server started on :8081")
+	err := http.ListenAndServe(":8081", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+
+}
+
+var clients = make(map[*websocket.Conn]bool)
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		// Always allow connections from all origins
+		return true
+	},
+}
+
+func handleWebSocket(w http.ResponseWriter, r *http.Request) {
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	clients[conn] = true
+
+	defer func() {
+		conn.Close()
+		delete(clients, conn)
+	}()
+
+	for {
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Println("Error reading WebSocket message:", err)
+			break
+		}
+
+		log.Printf("Received message from client: %s", message)
+
+		// Send a response back to the client
+		err = conn.WriteMessage(messageType, message)
+		if err != nil {
+			log.Println("Error writing WebSocket message:", err)
+			break
+		}
+	}
+
 }

@@ -67,6 +67,10 @@ func (server *HTTPServer) SetLRU(w http.ResponseWriter, r *http.Request) {
 		util.ResponseWithError(w, 400, "Invalid request payload")
 		return
 	}
+	if createLruRequest.Key == "" || createLruRequest.Value == "" {
+		util.ResponseWithError(w, 400, "Value and key are required")
+		return
+	}
 
 	lru := server.cache.Set(createLruRequest.Key, createLruRequest.Value, server)
 	if lru == nil {
