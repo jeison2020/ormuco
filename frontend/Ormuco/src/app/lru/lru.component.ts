@@ -44,7 +44,7 @@ export class LruComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.socket$ = webSocket('ws://localhost:8081/ws');
+    this.socket$ = webSocket('ws://ormucotest.jeisonvergara.com/ws');
     this.getAlldata();
     this.socket$.subscribe(
       (message) => { 
