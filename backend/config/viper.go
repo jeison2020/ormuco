@@ -14,6 +14,7 @@ type Config struct {
 	RedisAddress        string `mapstructure:"REDIS_ADDRESS"`
 	RedisPassword       string `mapstructure:"REDIS_PASSWORD"`
 	RedisDbName         int    `mapstructure:"REDIS_DB_NAME"`
+	SwaggerUrl          string `mapstructure:"SWAGGER_URL"`
 }
 
 // LoadConfig reads configuration from file or environment variable.

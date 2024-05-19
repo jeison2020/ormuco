@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
 	"github.com/redis/go-redis/v9"
 	_ "github.com/redis/go-redis/v9"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
-	"net/http"
 	"ormuco.go/config"
 	"ormuco.go/internal/middlewares"
 )
@@ -43,7 +44,7 @@ func (server *HTTPServer) setupRoutes() *chi.Mux {
 	router.Get("/docs/doc.yaml", server.GetDocs)
 	router.Get("/compare/{v1}/{v2}", server.GetVersion)
 	router.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/api/v1/docs/doc.yaml"),
+		httpSwagger.URL(server.config.SwaggerUrl),
 	))
 	cors := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},

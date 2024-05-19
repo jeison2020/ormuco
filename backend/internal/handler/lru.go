@@ -32,9 +32,19 @@ func (server *HTTPServer) GetAllCacheLRU(w http.ResponseWriter, r *http.Request)
 
 		}
 		var convertRedis models.GetLruResponse
-		json.Unmarshal([]byte(value), convertRedis)
+		json.Unmarshal([]byte(value), &convertRedis)
+		convertRedis.Key = key
+		var exists bool = false
+		for _, v := range LRUResponse {
+			if v.Key == convertRedis.Key {
+				exists = true
+				break
+			}
+		}
+		if !exists {
+			LRUResponse = append(LRUResponse, convertRedis)
 
-		LRUResponse = append(LRUResponse, convertRedis)
+		}
 	}
 	util.RespondWithJSON(w, 201, LRUResponse)
 }

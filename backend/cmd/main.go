@@ -32,7 +32,7 @@ func main() {
 		Password: config.RedisPassword,
 		DB:       config.RedisDbName,
 	})
-	go watchForExpiredKeys(redis)
+	go watchForExpiredKeys(redis, cache)
 	go webSocketServer()
 	server, err := handler.NewHTTPServer(config, chi.NewRouter(), cache, redis)
 
@@ -46,7 +46,7 @@ func main() {
 	}
 }
 
-func watchForExpiredKeys(redisClient *redis.Client) {
+func watchForExpiredKeys(redisClient *redis.Client, cache *handler.GeoCache) {
 	pubsub := redisClient.Subscribe(context.Background(), "__keyevent@0__:expired")
 	defer pubsub.Close()
 
@@ -58,6 +58,8 @@ func watchForExpiredKeys(redisClient *redis.Client) {
 		}
 
 		expiredKey := msg.Payload
+		cache.Delete(expiredKey)
+
 		for client := range clients {
 			err := client.WriteMessage(websocket.TextMessage, []byte(expiredKey))
 			if err != nil {
