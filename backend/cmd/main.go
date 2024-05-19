@@ -34,7 +34,7 @@ func main() {
 	})
 	go watchForExpiredKeys(redis, cache)
 	go webSocketServer()
-	server, err := handler.NewHTTPServer(config, chi.NewRouter(), cache, redis)
+	server, err := handler.NewHTTPServer(config, chi.NewRouter(), cache, redis, clients)
 
 	if err != nil {
 		log.Fatal("cannot connect to the database", err)

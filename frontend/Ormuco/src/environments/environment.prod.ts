@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiUrl: 'http://ormucotest.jeisonvergara.com/api/v1/',
+    apiUrl: 'https://ormucotest.jeisonvergara.com/api/v1/',
   };

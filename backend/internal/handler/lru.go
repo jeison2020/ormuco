@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/go-chi/chi"
+	"github.com/gorilla/websocket"
 	"ormuco.go/internal/util"
 	"ormuco.go/pkg/models"
 )
@@ -98,6 +100,16 @@ func (server *HTTPServer) SetLRU(w http.ResponseWriter, r *http.Request) {
 		util.ResponseWithError(w, 500, "Error setting key")
 	}
 
+	for client := range server.clients {
+		lruResponseByte, _ := json.Marshal(lruResponse)
+		err := client.WriteMessage(websocket.TextMessage, lruResponseByte)
+		if err != nil {
+			log.Printf("Error sending WebSocket message: %v", err)
+			client.Close()
+			delete(server.clients, client)
+		}
+	}
+
 	util.RespondWithJSON(w, 201, lruResponse)
 
 }
@@ -109,7 +121,7 @@ func (server *HTTPServer) GetDocs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Println(dir)
-	yamlData, err := ioutil.ReadFile(filepath.Join(dir, "backend/docs/doc.yaml"))
+	yamlData, err := ioutil.ReadFile(filepath.Join(dir, server.config.SwaggerConfigPath))
 	if err != nil {
 		http.Error(w, "Failed to read YAML file", http.StatusInternalServerError)
 		return

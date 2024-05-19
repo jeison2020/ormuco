@@ -8,4 +8,5 @@ FROM alpine
 WORKDIR /app
 COPY --from=build /app/build .
 COPY --from=build /app/app.env .
+COPY --from=build /app/docs/doc.yaml .
 CMD ["./ormuco"]

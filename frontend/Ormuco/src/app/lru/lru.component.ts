@@ -14,6 +14,7 @@ import { LruService } from './lru.service';
 import { MatTableModule } from '@angular/material/table';
 import { CommonModule } from '@angular/common';
 import { WebSocketSubject, webSocket } from 'rxjs/webSocket';
+import { catchError, delay, of, retryWhen, take } from 'rxjs';
 
 @Component({
   selector: 'app-lru',
@@ -44,20 +45,47 @@ export class LruComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.socket$ = webSocket('ws://ormucotest.jeisonvergara.com/ws');
-    this.getAlldata();
-    this.socket$.subscribe(
-      (message) => { 
-        this.getAlldata();
-        console.log('Received message:', message) 
-      },
-      (error) => console.error('WebSocket error:', error),
-      () => console.log('WebSocket connection closed.')
-    );
+    this.connectWebSocket();
   }
 
   ngOnDestroy() {
     //this.socket.close();
+  }
+
+  private connectWebSocket(): void {
+    this.socket$ = webSocket('wss://ormucotest.jeisonvergara.com/ws');
+    this.socket$.pipe(
+      catchError(error => {
+        console.error('WebSocket error:', error);
+        return of(error); // Return an observable to continue the stream
+      }),
+      retryWhen(errors =>
+        errors.pipe(
+          delay(1000), // Delay for 1 second before retrying
+          take(10) // Limit the number of retries
+        )
+      )
+    ).subscribe(
+      (message) => {
+        this.getAlldata();
+        console.log('Received message:', message);
+      },
+      (error) => {
+        console.error('WebSocket error:', error);
+        this.reconnectWebSocket();
+      },
+      () => {
+        console.log('WebSocket connection closed.');
+        this.reconnectWebSocket();
+      }
+    );
+  }
+
+  private reconnectWebSocket(): void {
+    console.log('Reconnecting WebSocket...');
+    setTimeout(() => {
+      this.connectWebSocket();
+    }, 1000); // Reconnect after 1 second
   }
 
   public getAlldata() {

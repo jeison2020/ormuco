@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/websocket"
 	"github.com/redis/go-redis/v9"
 	_ "github.com/redis/go-redis/v9"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -13,22 +14,24 @@ import (
 )
 
 type HTTPServer struct {
-	config config.Config
-	route  *chi.Mux
-	cache  *GeoCache
-	redis  *redis.Client
+	config  config.Config
+	route   *chi.Mux
+	cache   *GeoCache
+	redis   *redis.Client
+	clients map[*websocket.Conn]bool
 }
 
 func (server *HTTPServer) Run() error {
 	return http.ListenAndServe(server.config.ServerAddress, middlewares.Logger(server.setupRoutes()))
 }
 
-func NewHTTPServer(config config.Config, router *chi.Mux, cache *GeoCache, redis *redis.Client) (*HTTPServer, error) {
+func NewHTTPServer(config config.Config, router *chi.Mux, cache *GeoCache, redis *redis.Client, clients map[*websocket.Conn]bool) (*HTTPServer, error) {
 	server := &HTTPServer{
-		config: config,
-		route:  router,
-		cache:  cache,
-		redis:  redis,
+		config:  config,
+		route:   router,
+		cache:   cache,
+		redis:   redis,
+		clients: clients,
 	}
 
 	return server, nil
