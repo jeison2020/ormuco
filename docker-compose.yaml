@@ -36,7 +36,6 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "6369:6379"
-      - "6369:6379"
 
   nginx:
     container_name: nginx-2
