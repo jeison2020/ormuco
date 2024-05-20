@@ -76,7 +76,7 @@ func watchForExpiredKeys(redisClient *redis.Client, cache *handler.GeoCache) {
 func webSocketServer() {
 	http.HandleFunc("/ws", handleWebSocket)
 	log.Println("WebSocket server started on :8081")
-	err := http.ListenAndServe(":8081", nil)
+	err := http.ListenAndServeTLS(":8081", "fullchain.pem", "privkey.pem", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}

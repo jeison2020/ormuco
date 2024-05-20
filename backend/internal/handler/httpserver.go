@@ -22,7 +22,7 @@ type HTTPServer struct {
 }
 
 func (server *HTTPServer) Run() error {
-	return http.ListenAndServe(server.config.ServerAddress, middlewares.Logger(server.setupRoutes()))
+	return http.ListenAndServeTLS(server.config.ServerAddress, "fullchain.pem", "privkey.pem", middlewares.Logger(server.setupRoutes()))
 }
 
 func NewHTTPServer(config config.Config, router *chi.Mux, cache *GeoCache, redis *redis.Client, clients map[*websocket.Conn]bool) (*HTTPServer, error) {
